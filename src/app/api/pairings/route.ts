@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 export async function GET() {
-  // 公開設定をチェック
   const { data: setting } = await supabase
     .from("settings")
     .select("value")
@@ -10,19 +9,17 @@ export async function GET() {
     .single();
 
   if (!setting || setting.value !== "true") {
-    return NextResponse.json({ published: false, pairings: [] });
+    return NextResponse.json({ published: false, pdfUrl: null });
   }
 
-  const { data, error } = await supabase
-    .from("pairings")
-    .select("*")
-    .order("start_course")
-    .order("group_number")
-    .order("order_in_group");
+  const { data: pdfSetting } = await supabase
+    .from("settings")
+    .select("value")
+    .eq("key", "pairings_pdf_url")
+    .single();
 
-  if (error) {
-    return NextResponse.json({ error: "データの取得に失敗しました。" }, { status: 500 });
-  }
-
-  return NextResponse.json({ published: true, pairings: data || [] });
+  return NextResponse.json({
+    published: true,
+    pdfUrl: pdfSetting?.value || null,
+  });
 }

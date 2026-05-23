@@ -3,6 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { type TournamentInfo, defaultInfo } from "@/lib/tournament";
 
+type Companion = {
+  name: string;
+  graduation_number: string;
+  birth_date: string;
+};
+
 type Entry = {
   id: string;
   school: string;
@@ -15,6 +21,7 @@ type Entry = {
   phone: string;
   requests: string;
   prize_donation: string;
+  companions: string | null;
   created_at: string;
 };
 
@@ -262,6 +269,7 @@ export default function AdminPage() {
                   <th className="border p-2 text-left">電話</th>
                   <th className="border p-2 text-left">希望</th>
                   <th className="border p-2 text-left">協賛</th>
+                  <th className="border p-2 text-left">同伴者</th>
                   <th className="border p-2 text-left">申込日</th>
                 </tr>
               </thead>
@@ -278,6 +286,11 @@ export default function AdminPage() {
                     <td className="border p-2">{e.phone}</td>
                     <td className="border p-2 max-w-32 truncate">{e.requests}</td>
                     <td className="border p-2">{e.prize_donation}</td>
+                    <td className="border p-2">
+                      {e.companions ? (JSON.parse(e.companions) as Companion[]).map((c, i) => (
+                        <div key={i} className="text-xs">{c.name}{c.graduation_number ? `（${c.graduation_number}回）` : ""}</div>
+                      )) : "-"}
+                    </td>
                     <td className="border p-2 whitespace-nowrap">
                       {e.created_at ? new Date(e.created_at).toLocaleDateString("ja-JP") : ""}
                     </td>
@@ -309,23 +322,14 @@ export default function AdminPage() {
 
         <form onSubmit={handleUpload} className="space-y-3">
           <div>
-            <label className="block text-sm font-bold mb-1">組合せファイルをアップロード（xlsx / csv）</label>
+            <label className="block text-sm font-bold mb-1">組合せPDFをアップロード</label>
             <p className="text-xs text-gray-500 mb-2">
-              Excelファイル（.xlsx）またはCSVファイルをアップロードしてください。
+              PDFファイルをアップロードしてください。既存のPDFは上書きされます。
             </p>
-            <div className="flex items-center gap-2 mb-2">
-              <label className="text-xs text-gray-600">シート名（省略時は先頭シート）：</label>
-              <input
-                type="text"
-                name="sheet"
-                placeholder="例: 2025"
-                className="border border-gray-300 rounded px-2 py-1 text-xs w-28 focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-              />
-            </div>
             <input
               type="file"
               name="file"
-              accept=".xlsx,.xls,.csv"
+              accept=".pdf"
               className="block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
           </div>
