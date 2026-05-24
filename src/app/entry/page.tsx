@@ -29,13 +29,13 @@ const initialForm: FormData = {
   name: "",
   graduation_number: "",
   address: "",
-  birth_date: "",
+  birth_date: "1970-01-01",
   phone: "",
   requests: "",
   prize_donation: "",
 };
 
-const emptyCompanion = (): Companion => ({ name: "", graduation_number: "", birth_date: "" });
+const emptyCompanion = (): Companion => ({ name: "", graduation_number: "", birth_date: "1970-01-01" });
 
 const inputCls = "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]";
 

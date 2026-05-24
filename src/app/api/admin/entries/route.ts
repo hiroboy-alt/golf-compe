@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin as supabase } from "@/lib/supabase";
 
 export async function GET(request: Request) {
   const isAdmin = await verifyAdmin();
@@ -22,16 +22,30 @@ export async function GET(request: Request) {
 
   if (format === "csv") {
     const headers = [
-      "学校", "参加/不参加", "プレースタイル", "氏名", "卒業回数",
-      "卒業年", "住所", "生年月日", "電話番号", "希望事項", "賞品寄贈", "申込日時"
+      "学校", "参加/不参加", "プレースタイル", "氏名", "回生",
+      "住所", "生年月日", "電話番号", "希望事項", "賞品寄贈",
+      "同伴者1氏名", "同伴者1回生", "同伴者1生年月日",
+      "同伴者2氏名", "同伴者2回生", "同伴者2生年月日",
+      "同伴者3氏名", "同伴者3回生", "同伴者3生年月日",
+      "申込日時"
     ];
-    const rows = (data || []).map((e) => [
-      e.school, e.participation, e.caddy_preference || "",
-      e.name, e.graduation_number || "", e.graduation_year || "",
-      e.address || "", e.birth_date || "", e.phone,
-      e.requests || "", e.prize_donation || "",
-      e.created_at ? new Date(e.created_at).toLocaleString("ja-JP") : ""
-    ]);
+    const rows = (data || []).map((e) => {
+      const companions: { name: string; graduation_number: string; birth_date: string }[] =
+        e.companions ? JSON.parse(e.companions) : [];
+      const companionCols: string[] = [];
+      for (let i = 0; i < 3; i++) {
+        const c = companions[i];
+        companionCols.push(c?.name || "", c?.graduation_number || "", c?.birth_date || "");
+      }
+      return [
+        e.school, e.participation, e.caddy_preference || "",
+        e.name, e.graduation_number || "",
+        e.address || "", e.birth_date || "", e.phone,
+        e.requests || "", e.prize_donation || "",
+        ...companionCols,
+        e.created_at ? new Date(e.created_at).toLocaleString("ja-JP") : ""
+      ];
+    });
 
     const BOM = "\uFEFF";
     const csv = BOM + [headers, ...rows]
