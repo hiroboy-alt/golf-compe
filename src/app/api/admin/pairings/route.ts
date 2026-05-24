@@ -40,9 +40,12 @@ export async function POST(request: Request) {
       .from("pairings")
       .getPublicUrl("pairings.pdf");
 
+    // キャッシュ回避のためタイムスタンプをURLに付加
+    const pdfUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
     const { error: settingsError } = await supabase
       .from("settings")
-      .upsert({ key: "pairings_pdf_url", value: urlData.publicUrl });
+      .upsert({ key: "pairings_pdf_url", value: pdfUrl });
 
     if (settingsError) {
       return NextResponse.json({ error: "URLの保存に失敗しました。" }, { status: 500 });
