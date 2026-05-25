@@ -1,30 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/auth";
 import { supabaseAdmin as supabase } from "@/lib/supabase";
-import { PDFDocument, degrees } from "pdf-lib";
-
-// PDFのページ回転を正規化（横向きPDFが縦向きで表示される問題を解決）
-async function normalizePdfRotation(buffer: Buffer): Promise<Buffer> {
-  try {
-    const pdfDoc = await PDFDocument.load(buffer);
-    const pages = pdfDoc.getPages();
-    for (const page of pages) {
-      const rotation = page.getRotation().angle;
-      if (rotation !== 0) {
-        const { width, height } = page.getSize();
-        if (rotation === 90 || rotation === 270) {
-          page.setSize(height, width);
-        }
-        page.setRotation(degrees(0));
-      }
-    }
-    const normalized = await pdfDoc.save();
-    return Buffer.from(normalized);
-  } catch {
-    // 正規化に失敗した場合は元のバッファをそのまま使用
-    return buffer;
-  }
-}
 
 export async function POST(request: Request) {
   const isAdmin = await verifyAdmin();
@@ -44,9 +20,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "PDFファイルを選択してください。" }, { status: 400 });
     }
 
-    const rawBuffer = Buffer.from(await file.arrayBuffer());
-    // ページ回転を正規化して横向きPDFを正しく表示
-    const buffer = await normalizePdfRotation(rawBuffer);
+    const buffer = Buffer.from(await file.arrayBuffer());
 
     const { error: uploadError } = await supabase.storage
       .from("pairings")
